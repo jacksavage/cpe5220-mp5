@@ -28,13 +28,11 @@ begin
 	reset_manager: process(reset)
 	begin
 	if reset = '1' then
-	begin
 		insufficient_funds <= '1';
 		return_currency_interrupt <= '0';
 		loaded_balance <= "0000000000";
 		remaining_balance <= "0000000000";
 		return_dollars <= "0000"; return_quarters <= "0000"; return_dimes <= "0000"; return_nickles <= "0000";
-	end
 	end if;
 	end process;
 
@@ -48,21 +46,17 @@ begin
 	calculate_balance: process(vend) is -- when state machine sends vend command, calculate remaining_balance or insufficient_funds
 	begin
 	if vend = '1' then
-	begin
 		if (loaded_balance > order_cost) then
-			begin
-			remaining_balance = loaded_balance - order_cost;
-			end
-		else if (loaded_balance < order_cost) then
-			begin
+			remaining_balance <= loaded_balance - order_cost;
+		elsif (loaded_balance < order_cost) then
 			insufficient_funds <= '1';
-			end
 		end if;
 	end if;
 	end process;
 	
-	return_balance: process(return_balance) -- return remaining_balance if vend action occurs or loaded_balance if order is canceled
+	return_currency: process(return_balance) is -- return remaining_balance if vend action occurs or loaded_balance if order is canceled
 	begin
+		return_currency_interrupt <= '1';
 	end process;
 	
 end architecture behavioral;
