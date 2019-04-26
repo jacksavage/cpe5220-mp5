@@ -56,6 +56,7 @@ begin
 	
 	return_currency: process(return_balance) is -- return remaining_balance if vend action occurs or loaded_balance if order is canceled
 	begin
+		-- calculate and set number of returned dollars, quarters, dimes, and nickles from remaining_balance
 		return_currency_interrupt <= '1';
 	end process;
 	
