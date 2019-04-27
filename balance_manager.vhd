@@ -13,8 +13,8 @@ use ieee.fixed_pkg.all;
 entity balance_manager is
 	port( num_dollars, num_quarters, num_dimes, num_nickles : in unsigned(3 downto 0); -- Max 16 of each type, totals $22.40
 	      new_currency_interrupt : in std_logic; -- interrupt when dollar/coin manager gets new currency
-		  order_cost : in ufixed(4 downto -5); -- $32.00 with 0.03125 resolution, max order cost < $22.40
-		  vend, return_balance, reset : in std_logic; -- vend and return balance commands from state machine, vend subtracts order cost from balance, and return_balance returns money to dollar/coin manager
+	      order_cost : in ufixed(4 downto -5); -- $32.00 with 0.03125 resolution, max order cost < $22.40
+	      vend, return_balance, reset, clk : in std_logic; -- vend and return balance commands from state machine, vend subtracts order cost from balance, and return_balance returns money to dollar/coin manager
 	      insufficient_funds, return_currency_interrupt : out std_logic; -- insufficient_funds signal to state machine, return_currency_interrupt to dollar/coin manager when return_balance outputs are ready
 	      return_dollars, return_quarters, return_dimes, return_nickles : inout unsigned(3 downto 0)); -- return balance quantity to dollar/coin manager
 end entity balance_manager;
@@ -22,55 +22,80 @@ end entity balance_manager;
 architecture behavioral of balance_manager is
 
 signal previous_balance, loaded_balance, remaining_balance : ufixed(4 downto -5);
-signal temp_balance1, temp_balance2, temp_balance3 : ufixed(4 downto -5);
+signal temp_balance1, temp_balance2, temp_balance3, remainder1, remainder2, remainder3, dollars,quarters,dimes,nickles : ufixed(4 downto -5);
 
 begin
 
-	reset_manager: process(reset)
+	load_currency: process(clk) is -- load balance from dollar/coin manager
 	begin
-	if reset = '1' then
-		insufficient_funds <= '1';
-		return_currency_interrupt <= '0';
-		loaded_balance <= "0000000000";
-		previous_balance <= "0000000000";
-		remaining_balance <= "0000000000";
-		return_dollars <= "0000"; return_quarters <= "0000"; return_dimes <= "0000"; return_nickles <= "0000";
-	end if;
-	end process;
-
-	load_currency: process(new_currency_interrupt) is -- load balance from dollar/coin manager
-	begin
-	if new_currency_interrupt = '1' then
+	if (new_currency_interrupt = '1' and reset = '0') then
 		insufficient_funds <= '0';
 	-- load currency from dollar/coin manager input and calculate loaded_balance
-		loaded_balance <= (1.00*to_ufixed(num_dollars))+(0.25*to_ufixed(num_quarters))+(0.10*to_ufixed(num_dimes))+(0.05*to_ufixed(num_nickles))+previous_balance;
+		dollars<=resize(1.00*to_ufixed(num_dollars, dollars),dollars); 
+		quarters<=resize(0.25*to_ufixed(num_quarters,quarters),quarters); 
+		dimes<=resize(0.10*to_ufixed(num_dimes,dimes),dimes); 
+		nickles<=resize(0.05*to_ufixed(num_nickles,dimes),nickles);
+		loaded_balance <= resize(dollars+quarters+dimes+nickles, loaded_balance);
 		previous_balance <= loaded_balance;
 	end if;
 	end process;
 	
-	calculate_balance: process(vend) is -- when state machine sends vend command, calculate remaining_balance or insufficient_funds
+	calculate_balance: process(clk) is -- when state machine sends vend command, calculate remaining_balance or insufficient_funds
 	begin
-	if vend = '1' then
+	if (vend = '1' and reset = '0') then
 		if (loaded_balance > order_cost) then
-			remaining_balance <= loaded_balance - order_cost;
+			remaining_balance <= resize(loaded_balance-order_cost, remaining_balance);
 			previous_balance <= remaining_balance; -- in case user loads more money
+			insufficient_funds <= '0';
 		elsif (loaded_balance < order_cost) then
 			insufficient_funds <= '1';
 		end if;
 	end if;
 	end process;
 	
-	return_currency: process(return_balance) is -- return remaining_balance if vend action occurs or loaded_balance if order is canceled
+	return_currency: process(clk) is -- return remaining_balance if vend action occurs or loaded_balance if order is canceled
 	begin
-	if return_balance = '1' then
+	if (return_balance = '1' and reset = '0') then
 		-- calculate and set number of returned dollars, quarters, dimes, and nickles from remaining_balance
-		return_dollars <= to_unsigned(remaining_balance, return_dollars'length);
-		temp_balance1 <= remaining_balance - (to_ufixed(return_dollars)*1.0);
-		return_quarters <= to_unsigned(temp_balance1/0.25, return_quarters'length);
-		temp_balance2 <= temp_balance1 - (to_ufixed(return_quarters)*0.25);
-		return_dimes <= to_unsigned(temp_balance2/0.10, return_dimes'length);
-		temp_balance3 <= temp_balance2 - (to_ufixed(return_dimes)*0.10);
-		return_nickles <= to_unsigned(temp_balance3/0.05, return_nickles'length);
+		if (remaining_balance >= to_ufixed(1.00,remaining_balance)) then
+			return_dollars <= to_unsigned(remaining_balance, return_dollars'length);
+		else
+			return_dollars <= to_unsigned(0, return_dollars'length);
+		end if;
+
+		temp_balance1 <= resize(remaining_balance - (to_ufixed(return_dollars,temp_balance1)*1.0), temp_balance1);
+		remainder1 <= resize(temp_balance1/to_ufixed(0.25,temp_balance1),remainder1);
+
+		if (remainder1 < to_ufixed(1,temp_balance1)) then	
+			return_quarters <= to_unsigned(0,return_quarters'length);
+		elsif (remainder1 < to_ufixed(2,temp_balance1)) then		
+			return_quarters <= to_unsigned(1,return_quarters'length);
+		elsif (remainder1 < to_ufixed(3,temp_balance1)) then
+			return_quarters <= to_unsigned(2,return_quarters'length);
+		elsif (remainder1 < to_ufixed(4,temp_balance1)) then
+			return_quarters <= to_unsigned(3,return_quarters'length);
+		end if;
+			
+		temp_balance2 <= resize(temp_balance1 - (to_ufixed(return_quarters, temp_balance2)*0.25), temp_balance2);
+		remainder2 <= resize(temp_balance2/to_ufixed(0.10,temp_balance2),remainder2);
+
+		if (remainder2 < to_ufixed(1,temp_balance2)) then	
+			return_dimes <= to_unsigned(0,return_dimes'length);
+		elsif (remainder2 < to_ufixed(2,temp_balance2)) then		
+			return_dimes <= to_unsigned(1,return_dimes'length);
+		elsif (remainder2 < to_ufixed(3,temp_balance2)) then
+			return_dimes <= to_unsigned(2,return_dimes'length);
+		end if;
+
+		temp_balance3 <= resize(temp_balance2 - (to_ufixed(return_dimes, temp_balance3)*0.10), temp_balance3);
+		remainder3 <= resize(temp_balance3/to_ufixed(0.05,temp_balance3),remainder3);
+
+		if (remainder3 < to_ufixed(1,temp_balance3)) then	
+			return_nickles <= to_unsigned(0,return_nickles'length);
+		elsif (remainder3 < to_ufixed(2,temp_balance3)) then		
+			return_nickles <= to_unsigned(1,return_nickles'length);
+		end if;
+
 		return_currency_interrupt <= '1';
 	end if;
 	end process;
