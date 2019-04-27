@@ -1,6 +1,5 @@
 -- Test bench for balance manager
 
--- Test bench multifunction system 6-bit 
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
