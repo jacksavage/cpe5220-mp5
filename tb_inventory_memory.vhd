@@ -10,7 +10,7 @@ end entity tb_inventory_memory;
 
 architecture test of tb_inventory_memory is
 	signal item_num : unsigned(3 downto 0);
-	signal add, remove, clk : std_logic;
+	signal add, remove, clk, reset : std_logic;
 	signal quantity : unsigned(3 downto 0);
 	signal sold_out : std_logic;
 	signal item_price : ufixed(4 downto -5);
@@ -32,7 +32,7 @@ begin
 	end process clk_gen;
 
 	-- reset
-	-- reset <= '1', '0' after 2*t_c;
+	reset <= '1', '0' after 2*t_c;
 
 	-- test case procedure
 	apply_test_cases : process is
