@@ -21,15 +21,15 @@ end entity balance_manager;
 
 architecture behavioral of balance_manager is
 
-signal previous_balance, loaded_balance, remaining_balance : ufixed(4 downto -5);
+signal previous_balance, loaded_balance, vended_balance, remaining_balance : ufixed(4 downto -5);
 signal temp_balance1, temp_balance2, temp_balance3, remainder1, remainder2, remainder3, dollars,quarters,dimes,nickles : ufixed(4 downto -5);
+signal vended : integer := 0;
 
 begin
 
 	load_currency: process(clk) is -- load balance from dollar/coin manager
 	begin
 	if (new_currency_interrupt = '1' and reset = '0') then
-		insufficient_funds <= '0';
 	-- load currency from dollar/coin manager input and calculate loaded_balance
 		dollars<=resize(1.00*to_ufixed(num_dollars, dollars),dollars); 
 		quarters<=resize(0.25*to_ufixed(num_quarters,quarters),quarters); 
@@ -44,9 +44,10 @@ begin
 	begin
 	if (vend = '1' and reset = '0') then
 		if (loaded_balance > order_cost) then
-			remaining_balance <= resize(loaded_balance-order_cost, remaining_balance);
-			previous_balance <= remaining_balance; -- in case user loads more money
+			vended_balance <= resize(loaded_balance-order_cost, remaining_balance);
+			previous_balance <= vended_balance; -- in case user loads more money
 			insufficient_funds <= '0';
+			vended <= 1;
 		elsif (loaded_balance < order_cost) then
 			insufficient_funds <= '1';
 		end if;
@@ -55,6 +56,13 @@ begin
 	
 	return_currency: process(clk) is -- return remaining_balance if vend action occurs or loaded_balance if order is canceled
 	begin
+	
+	if (vended=1) then
+		remaining_balance <= vended_balance;
+	else
+		remaining_balance <= loaded_balance;
+	end if;
+
 	if (return_balance = '1' and reset = '0') then
 		-- calculate and set number of returned dollars, quarters, dimes, and nickles from remaining_balance
 		if (remaining_balance >= to_ufixed(1.00,remaining_balance)) then
