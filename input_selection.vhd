@@ -7,9 +7,9 @@ use ieee.numeric_std.all;
 
 entity input_selection is
 	port(sel_button : in std_logic_vector(7 downto 0);
-	     return_btn, cancel_btn, reset, clk : in std_logic;
+	     vend_btn, cancel_btn, reset, clk : in std_logic;
 	     item_num : out unsigned(3 downto 0); -- 16 different items
-	     maintenance_signal, return_signal, cancel_signal : out std_logic; -- signal to state machine to go to maintenance mode, return or cancel
+	     maintenance_signal, vend_signal, cancel_signal : out std_logic; -- signal to state machine to go to maintenance mode, vend or cancel
 	     valid : out std_logic -- input valid signal
 	     );
 end entity input_selection;
@@ -44,12 +44,12 @@ if reset = '0' then
 	end if;
 
 	-- process return_btn
-	if return_btn = '1' then
+	if vend_btn = '1' then
 		valid <= '1';
-		return_signal <= '1';
+		vend_signal <= '1';
 	else
 		valid <= '0';
-		return_signal <= '0';
+		vend_signal <= '0';
 	end if;
 	
 	-- process cancel_btn
