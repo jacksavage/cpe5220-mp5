@@ -20,13 +20,15 @@ begin
 		'A' when 0 to 3,
 		'B' when 4 to 7,
 		'C' when 8 to 11,
-		'D' when others;
+		'D' when 12 to 15,
+		'-' when others;
 	
 	with item_num_int select number <=
-		'1' when 0 | 4 | 8 | 12,
-		'2' when 1 | 5 | 9 | 13,
-		'3' when 2 | 6 | 11 | 14,
-		'4' when others;
+		'1' when 0 | 4 | 8  | 12,
+		'2' when 1 | 5 | 9  | 13,
+		'3' when 2 | 6 | 10 | 14,
+		'4' when 3 | 7 | 11 | 15,
+		'-' when others;
 		
 	with en select item_display <=
 		letter & number when '1',
