@@ -29,7 +29,7 @@ begin
 		procedure test(num : integer; successful_vend : boolean) is
 		begin
 			-- select an item
-			item_num <= to_unsigned(num, item_num);
+			item_num <= to_unsigned(num, item_num'length);
 			
 			-- tell the UUT to dispense
 			dispense <= '1';
