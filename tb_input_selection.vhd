@@ -10,17 +10,17 @@ end entity tb_input_selection;
 architecture test of tb_input_selection is
 
 	signal sel_button : std_logic_vector(7 downto 0);
-	signal return_btn, cancel_btn, reset, clk : std_logic;
+	signal vend_btn, cancel_btn, reset, clk : std_logic;
 	signal item_num : unsigned(3 downto 0); 
-	signal maintenance_signal, return_signal, cancel_signal : std_logic;
+	signal maintenance_signal, vend_signal, cancel_signal : std_logic;
 	signal valid : std_logic;
 	constant t_c : time := 50 ns;
 
 begin
 	-- instantiate DUV
 	duv_input_selection: entity work.input_selection(behavioral)
-		port map (sel_button=>sel_button, return_btn=>return_btn, cancel_btn=>cancel_btn, reset=>reset, clk=>clk,
-			  item_num=>item_num, maintenance_signal=>maintenance_signal, return_signal=>return_signal, 
+		port map (sel_button=>sel_button, vend_btn=>vend_btn, cancel_btn=>cancel_btn, reset=>reset, clk=>clk,
+			  item_num=>item_num, maintenance_signal=>maintenance_signal, vend_signal=>vend_signal, 
 			  cancel_signal=>cancel_signal, valid=>valid);
 
 
@@ -40,9 +40,9 @@ begin
 	procedure apply_test (sel_button_test : std_logic_vector(7 downto 0)) is
 	begin
 		sel_button <= sel_button_test;
-		return_btn <= '1';
+		vend_btn <= '1';
 		wait until rising_edge(clk);
-		return_btn <= '1';
+		vend_btn <= '1';
 	end procedure apply_test;
 
 	begin
