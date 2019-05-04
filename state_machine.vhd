@@ -4,27 +4,39 @@ use ieee.numeric_std.all;
 
 entity state_machine is
 	port(
-		clk : in std_logic;
-		rst : in std_logic
+		reset_keypad           : out std_logic;
+		clock                  : in  std_logic;
+		vend_request           : in  std_logic;
+		enter_maintenance_mode : in  std_logic;
+		valid_item_requested   : in  std_logic;
+		cancel_signal          : in  std_logic;
+		refund_all_money       : out std_logic;
+		refund_change          : out std_logic;
+		funds_available        : in  std_logic;
+		dispense               : out std_logic;
+		done_dispensing        : in  std_logic;
+		dispensing_failed      : in  std_logic;
+		item_sold_out          : in  std_logic;
+		remove_inventory       : out std_logic;
+		add_inventory          : out std_logic;
+		inventory_quantity     : out unsigned(3 downto 0)
 	);
 end entity state_machine;
 
 architecture behavioral of state_machine is
-	type state_type is (user_selection, payment, dispursement);
+	type state_type is (idle, payment, dispursement);
 begin
-	process(clk, rst) is
-		variable state : state_type := user_selection;
+	process(clock) is
+		variable state : state_type := idle;
 	begin
-		if rst = '1' then
-			state := user_selection;
-		elsif rising_edge(clk) then
+		if rising_edge(clock) then
 			case state is
-				when user_selection =>
+				when idle =>
 					state := payment;
 				when payment =>
 					state := dispursement;
 				when dispursement =>
-					state := user_selection;
+					state := idle;
 			end case;
 		end if;
 	end process;
