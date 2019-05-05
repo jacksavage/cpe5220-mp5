@@ -32,8 +32,8 @@ entity vend_machine_controller is
 end entity vend_machine_controller;
 
 architecture components of vend_machine_controller is
-	signal T     : time      := 1 ns;
-	signal clock : std_logic := '1';
+	signal t_c    : time      := 1 ns;
+	signal clock :  std_logic;
 
 	signal valid_item_requested                                              : std_logic;
 	signal item_num, inventory_quantity                                      : unsigned(3 downto 0);
@@ -46,7 +46,10 @@ architecture components of vend_machine_controller is
 begin
 	clock_process: process is
 	begin
-		clock <= not clock after T / 2;
+		wait for t_c / 2;
+		clock <= '1';
+		wait for t_c - t_c / 2;
+		clock <= '0';
 	end process;
 
 	not_insufficient_funds <= not insufficient_funds;
@@ -64,7 +67,7 @@ begin
 			sel_button         => sel_button,
 			vend_btn           => vend_btn,
 			cancel_btn         => cancel_btn,
-			reset              => reset_keypad,
+			reset              => '0',
 			clk                => clock,
 			item_num           => item_num,
 			maintenance_signal => enter_maintenance_mode,
