@@ -19,58 +19,64 @@ entity state_machine is
 		item_sold_out          : in  std_logic;
 		remove_inventory       : out std_logic;
 		add_inventory          : out std_logic;
-		inventory_quantity     : inout unsigned(3 downto 0);
+		inventory_quantity     : out unsigned(3 downto 0);
 		price_ready            : in  std_logic
 	);
 end entity state_machine;
 
 architecture behavioral of state_machine is
-	type state_type is (idle, payment, inventory, vend, maintenance);
+	type state_type is (idle, input, payment, inventory, vend, maintenance);
 	signal message : string(1 to 18);   -- todo route out to display
+	signal state : state_type;
 begin
 	process(clock) is
-		variable state : state_type := idle;
 	begin
 		if rising_edge(clock) then
-			-- default control signal states
-			reset_keypad       <= '0';
-			refund_all_money   <= '0';
-			refund_change      <= '0';
-			dispense           <= '0';
-			remove_inventory   <= '0';
-			add_inventory      <= '0';
-			inventory_quantity <= to_unsigned(0, inventory_quantity'length);
 
 			-- handle current state
 			case state is
 				when idle =>
+					-- default control signal states
+					reset_keypad       <= '0';
+					refund_all_money   <= '0';
+					refund_change      <= '0';
+					dispense           <= '0';
+					remove_inventory   <= '0';
+					add_inventory      <= '0';
+					inventory_quantity <= to_unsigned(0, inventory_quantity'length);
+					state <= input;
+
+				when input =>
 					if cancel_signal = '1' then
 						refund_all_money <= '1';
+						state <= idle;
 					elsif enter_maintenance_mode = '1' then
-						state := maintenance;
+						state <= maintenance;
 					elsif vend_request = '1' and valid_item_requested = '1' then
 						-- todo latch the item number?
-						state := payment;
+						inventory_quantity <= to_unsigned(1, inventory_quantity'length);
+						state <= payment;
 					end if;
 
 				when payment =>
 					if cancel_signal = '1' then
 						refund_all_money <= '1';
-						state            := idle;
+						state            <= idle;
 					elsif price_ready = '1' and funds_available = '1' then
 						message <= "                  ";
-						state   := inventory;
+						state   <= inventory;
 					else
 						message <= "Insufficient funds";
+						state   <= payment;
 					end if;
 
 				when inventory =>
 					if item_sold_out = '0' then
-						state    := vend;
+						state    <= vend;
 						dispense <= '1';
 					else
 						message <= "      Out of stock";
-						state   := idle;
+						state   <= idle;
 					end if;
 
 				when vend =>
@@ -82,7 +88,7 @@ begin
 							refund_change <= '1';
 						end if;
 
-						state := idle;
+						state <= idle;
 					else
 						message <= "           Vending";
 					end if;
@@ -92,6 +98,7 @@ begin
 
 					if cancel_signal = '1' then
 						message <= "                  ";
+						state <= idle;
 					else
 						-- todo handle inventory mods
 					end if;
