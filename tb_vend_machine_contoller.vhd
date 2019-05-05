@@ -35,12 +35,14 @@ architecture test of tb_vend_machine_controller is
 	signal motors                    : std_logic_vector(15 downto 0);
 	signal lightscreen               : std_logic;
 
+	-- reset
+	signal reset			 : std_logic;
+
 	-- clock
-	constant t_c : time := 50 ns;
+	constant t_c : time := 1 ns;
 	signal clk : std_logic;
 
 	-- test bench variables
-	signal temp_sel_button : std_logic_vector(7 downto 0);
 
 begin
 	-- instantiate DUV
@@ -56,7 +58,9 @@ begin
 			  return_dollars=>return_dollars, return_quarters=>return_quarters, return_dimes=>return_dimes, 
 			  return_nickels=>return_nickels, return_currency_interrupt=>return_currency_interrupt,
 			  -- motors/lightscreen
-			  motors=>motors, lightscreen=>lightscreen
+			  motors=>motors, lightscreen=>lightscreen,
+			  -- reset
+			  reset=>reset
 			);
 
 
@@ -68,14 +72,7 @@ begin
 		clk <= '0';
 	end process clk_gen;
 
---	-- reset
---	reset_process : process is
---	procedure reset_controller;
---	begin
---		reset <= '1', '0' after 2*t_c;
---	end procedure reset_controller;
-
-
+	reset <= '1', '0' after 2*t_c;
 
 	apply_test_cases : process is
 
@@ -104,11 +101,13 @@ begin
 				sel_button(3 downto 0) <= "0001"; 
 			when others =>
 		end case;
-		--sel_button <= temp_sel_button;
-		wait until rising_edge(clk);
+		for i in 0 to 3 loop
+			wait until rising_edge(clk);
+		end loop;
 	end procedure select_item;
+
 	begin
-		
+		wait until reset = '0';
 		select_item('A','1');
 		select_item('A','2');
 		select_item('B','1');
