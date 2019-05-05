@@ -15,13 +15,14 @@ architecture test of tb_inventory_memory is
 	signal sold_out : std_logic;
 	signal item_price : ufixed(4 downto -5);
 	signal logic_size : std_logic_vector(0 downto 0);
+	signal ready : std_logic;
 
 	constant t_c : time := 50 ns;
 
 begin
 	-- instantiate DUV
 	duv_inventory_memory: entity work.inventory_memory(behavioral)
-		port map (item_num=>item_num, add=>add, remove=>remove, clk=>clk, reset=>reset, quantity=>quantity, sold_out=>sold_out, item_price=>item_price);
+		port map (item_num=>item_num, add=>add, remove=>remove, clk=>clk, reset=>reset, quantity=>quantity, sold_out=>sold_out, item_price=>item_price, ready=>ready);
 
 
 	clk_gen : process is
