@@ -59,6 +59,7 @@ begin
 	not_insufficient_funds <= not insufficient_funds;
 	not_lightscreen <= not lightscreen;
 	dispensing_passed <= done_dispensing and not(dispensing_failed);
+	input_ready <= reset_keypad;
 
 	display1 : entity work.display
 		port map(
@@ -103,7 +104,7 @@ begin
 
 	state_machine1 : entity work.state_machine
 		port map(
-			reset_keypad           => input_ready,
+			reset_keypad           => reset_keypad,
 			clock                  => clock,
 			vend_request           => vend_request,
 			enter_maintenance_mode => enter_maintenance_mode,
@@ -128,6 +129,7 @@ begin
 			clk           => clock,
 			dispense      => dispense,
 			lightscreen_n => not_lightscreen,
+			reset	      => reset_keypad,
 			item_num      => item_num,
 			motors        => motors,
 			done          => done_dispensing,

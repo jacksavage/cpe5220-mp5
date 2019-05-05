@@ -31,7 +31,7 @@ architecture behavioral of state_machine is
 	signal state : state_type;
 begin
 	process(clock) is
-	variable cnt : integer := 0;
+	variable cnt, dispensed : integer := 0;
 	begin
 		if rising_edge(clock) then
 			dispense           <= '0';
@@ -47,6 +47,7 @@ begin
 					add_inventory      <= '0';
 					inventory_quantity <= to_unsigned(0, inventory_quantity'length);
 					state <= input;
+					message <= "                  ";
 
 				when input =>
 					message <= "Input selection   ";
@@ -87,20 +88,26 @@ begin
 					if done_dispensing = '1' then
 						if dispensing_failed = '1' then
 							message <= "  Please try again";
+							dispensed := 0;
 						else
 							message       <= "    Item dispensed";
 							refund_all_money <= '1';
-						end if;
-						
-						if (return_money_complete = '1') then
-							cnt := cnt+1;
-							if(cnt=5) then
-								state <= idle;
-								cnt := 0;
-							end if;
+							dispensed := 1;
 						end if;
 					else
 						message <= "           Vending";
+					end if;
+
+					if (return_money_complete = '1' and dispensed = 1) then
+						if(rising_edge(clock)) then
+							cnt := cnt+1;
+						end if;
+						if(cnt=5) then
+							state <= idle;
+							cnt := 0;
+							dispensed := 0;
+						end if;
+						message <= "   Returning money";
 					end if;
 
 				when maintenance =>

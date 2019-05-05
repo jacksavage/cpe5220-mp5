@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
 
 entity dispenser is
 	port(
-		clk, dispense, lightscreen_n : in  std_logic;
+		clk, dispense, lightscreen_n, reset : in  std_logic;
 		item_num                     : in  unsigned(3 downto 0);
 		motors                       : out std_logic_vector(15 downto 0);
 		done, failed                 : out std_logic
@@ -34,9 +34,8 @@ begin
 			case state is
 				when idle =>
 					motors     <= (others => '0'); 	-- motors should not be driven in idle state
-					ls_mon_rst <= '1'; 		-- hold the lightscreen monitor in reset
-				        done       <= '0';		-- reset done signal
-					failed	   <= '0';		-- reset failed flag
+					ls_mon_rst <= '1'; 				-- hold the lightscreen monitor in reset
+				
 					-- should an item be dispensed?
 					if dispense = '1' then 										-- yes
 						state       					<= vending; 			-- set next state 
@@ -44,6 +43,10 @@ begin
 						motors(to_integer(item_num)) 	<= '1'; 				-- start driving the selected motor
 						ls_mon_rst 						<= '0';					-- release ls_mon latch reset
 						failed							<= '0';					-- reset failed flag
+					end if;
+
+					if (dispense = '1' or reset = '1') then
+						done        					<= '0';					-- reset done signal
 					end if;
 				when vending =>
 					-- has the drive counter expired? 
