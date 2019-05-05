@@ -20,7 +20,7 @@ entity state_machine is
 		remove_inventory       : out std_logic;
 		add_inventory          : out std_logic;
 		inventory_quantity     : out unsigned(3 downto 0);
-		price_ready	       : in  std_logic
+		price_ready            : in  std_logic
 	);
 end entity state_machine;
 
@@ -57,7 +57,7 @@ begin
 					if cancel_signal = '1' then
 						refund_all_money <= '1';
 						state            := idle;
-					elsif funds_available = '1' then
+					elsif price_ready = '1' and funds_available = '1' then
 						message <= "";
 						state   := inventory;
 					else
