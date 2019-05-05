@@ -11,7 +11,8 @@ entity inventory_memory is
 	     add, remove, clk, reset : in std_logic; -- signal to add or remove quantity
 	     quantity : in unsigned(3 downto 0);
 	     sold_out : out std_logic; -- signal to indicate item is out of stock
-	     item_price : out ufixed(4 downto -5) -- Outputs price of selected item
+	     item_price : out ufixed(4 downto -5); -- Outputs price of selected item
+	     ready : out std_logic
 	     );
 end entity inventory_memory;
 
@@ -32,7 +33,7 @@ state_reg : process (clk, reset) is
 begin
 if reset = '1' then
 	current_state <= LOAD;
-elsif rising_edge(clk) then
+elsif falling_edge(clk) then
 	current_state <= RUN;
 end if;
 end process state_reg;
@@ -42,9 +43,14 @@ begin
 
 case current_state is
 when RUN =>
-	item_price <= resize(price_mem(to_integer(item_num))*to_ufixed(quantity, price_size), price_size);
+	ready <= '0';
 
-	if rising_edge(clk) then
+	if(to_integer(quantity) > 0 ) then
+		item_price <= resize(price_mem(to_integer(item_num))*to_ufixed(quantity, price_size), price_size);
+		ready <= '1';
+	end if;
+
+	if falling_edge(clk) then
 	if add = '1' then
 		inventory_mem(to_integer(item_num)) <= inventory_mem(to_integer(item_num)) + quantity;
 	elsif remove = '1' then
