@@ -76,35 +76,11 @@ begin
 	reset <= '1', '0' after 2*t_c;
 	
 	run_tests : process is
-	procedure test_case (test_num : integer) is
-	begin
-		select_test <= test_num;
-		--for i in 0 to 5 loop
-			--wait until rising_edge(clk);
-		--end loop;
-		
-		load_test <= test_num;
-		--for i in 0 to 5 loop
-			--wait until rising_edge(clk);
-		--end loop;	
 
-		vend_test <= test_num;
-		for i in 0 to 5 loop
-			wait until rising_edge(clk);
-		end loop;		
-	end procedure test_case;
+--		for i in 0 to 5 loop
+--			wait until rising_edge(clk);
+--		end loop;		
 
-	begin
-		test_case(1);
-		test_case(2);
-		test_case(3);
-		test_case(4);
-		test_case(5);
-	end process run_tests;
-
-
-	select_item_process : process(select_test) is
-	-- select item
 	procedure select_item (letter_test, number_test : character) is
 	begin
 		case(letter_test) is
@@ -122,18 +98,7 @@ begin
 		when others =>
 		end case;
 	end procedure select_item;
-	begin
-		case(select_test) is
-		when 1 =>select_item('A','1'); -- $1.75
-		when 2 =>select_item('A','2'); -- $1.00
-		when 3 =>select_item('B','1'); -- $0.75
-		when 4 =>select_item('C','3'); -- $1.90
-		when 5 =>select_item('D','4'); -- $1.20
-		when others =>
-		end case;
-	end process select_item_process;
 
-	load_currency_process : process(load_test) is
 	procedure load_currency(num_dollars_in,num_quarters_in,num_dimes_in,num_nickels_in : integer) is
 	begin
 		num_dollars <= to_unsigned(num_dollars_in,num_dollars'length);
@@ -142,33 +107,89 @@ begin
 		num_nickels <= to_unsigned(num_nickels_in,num_nickels'length);
 		new_currency_interrupt <= '1', '0' after 2*t_c;
 	end procedure load_currency;
-	begin
-		case(load_test) is
-		when 1 =>load_currency(2,0,0,0); -- $2.00
-		when 2 =>load_currency(1,2,1,1); -- $1.65
-		when 3 =>load_currency(0,3,0,0); -- $0.75
-		when 4 =>load_currency(0,7,0,1); -- $1.80, insufficient_funds
-		when 5 =>load_currency(2,0,0,0); -- $2.00
-		when others =>
-		end case;
-	end process load_currency_process;
 
-	vend_process : process(vend_test) is
 	procedure vend(vend_btn_test, cancel_btn_test : std_logic) is
 	begin
 		vend_btn   <= vend_btn_test;
 		cancel_btn <= cancel_btn_test;
 	end procedure vend;
+
 	begin
-		case(vend_test) is
-		when 1 =>vend('1','0');
-		when 2 =>vend('1','0');
-		when 3 =>vend('1','0');
-		when 4 =>vend('1','0');
-		when 5 =>vend('0','1'); -- cancel
-		when others =>
-		end case;
-	end process vend_process;
+		wait until reset = '0';
+		load_currency(2,0,0,0); -- $2.00
+		select_item('A','1'); -- $1.75
+		load_currency(2,0,0,0); -- $2.00
+		vend('1','0');
+
+	end process run_tests;
+
+
+--	select_item_process : process(select_test) is
+--	-- select item
+--	procedure select_item (letter_test, number_test : character) is
+--	begin
+--		case(letter_test) is
+--		when 'A' => sel_button(7 downto 4) <= "1000"; 
+--		when 'B' =>sel_button(7 downto 4) <= "0100"; 
+--		when 'C' =>sel_button(7 downto 4) <= "0010"; 
+--		when 'D' =>sel_button(7 downto 4) <= "0001";
+--		when others =>
+--		end case;
+--		case(number_test) is
+--		when '1' =>sel_button(3 downto 0) <= "1000"; 
+--		when '2' =>sel_button(3 downto 0) <= "0100"; 
+--		when '3' =>sel_button(3 downto 0) <= "0010"; 
+--		when '4' =>sel_button(3 downto 0) <= "0001"; 
+--		when others =>
+--		end case;
+--	end procedure select_item;
+--	begin
+--		case(select_test) is
+--		when 1 =>select_item('A','1'); -- $1.75
+--		when 2 =>select_item('A','2'); -- $1.00
+--		when 3 =>select_item('B','1'); -- $0.75
+--		when 4 =>select_item('C','3'); -- $1.90
+--		when 5 =>select_item('D','4'); -- $1.20
+--		when others =>
+--		end case;
+--	end process select_item_process;
+--
+--	load_currency_process : process(load_test) is
+--	procedure load_currency(num_dollars_in,num_quarters_in,num_dimes_in,num_nickels_in : integer) is
+--	begin
+--		num_dollars <= to_unsigned(num_dollars_in,num_dollars'length);
+--		num_quarters <= to_unsigned(num_quarters_in,num_quarters'length);
+--		num_dimes <= to_unsigned(num_dimes_in,num_dimes'length);
+--		num_nickels <= to_unsigned(num_nickels_in,num_nickels'length);
+--		new_currency_interrupt <= '1', '0' after 2*t_c;
+--	end procedure load_currency;
+--	begin
+--		case(load_test) is
+--		when 1 =>load_currency(2,0,0,0); -- $2.00
+--		when 2 =>load_currency(1,2,1,1); -- $1.65
+--		when 3 =>load_currency(0,3,0,0); -- $0.75
+--		when 4 =>load_currency(0,7,0,1); -- $1.80, insufficient_funds
+--		when 5 =>load_currency(2,0,0,0); -- $2.00
+--		when others =>
+--		end case;
+--	end process load_currency_process;
+
+--	vend_process : process(vend_test) is
+--	procedure vend(vend_btn_test, cancel_btn_test : std_logic) is
+--	begin
+--		vend_btn   <= vend_btn_test;
+--		cancel_btn <= cancel_btn_test;
+--	end procedure vend;
+--	begin
+--		case(vend_test) is
+--		when 1 =>vend('1','0');
+--		when 2 =>vend('1','0');
+--		when 3 =>vend('1','0');
+--		when 4 =>vend('1','0');
+--		when 5 =>vend('0','1'); -- cancel
+--		when others =>
+--		end case;
+--	end process vend_process;
 
 
 	

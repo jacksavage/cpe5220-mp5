@@ -14,16 +14,16 @@ entity vend_machine_controller is
 		cancel_btn                : in  std_logic;
 		
 		-- coin & bill manager
-		num_dollars               : inout unsigned(3 downto 0);
-		num_quarters              : inout unsigned(3 downto 0);
-		num_dimes                 : inout unsigned(3 downto 0);
-		num_nickels               : inout  unsigned(3 downto 0);
-		new_currency_interrupt    : inout  std_logic;
+		num_dollars               : in unsigned(3 downto 0);
+		num_quarters              : in unsigned(3 downto 0);
+		num_dimes                 : in unsigned(3 downto 0);
+		num_nickels               : in  unsigned(3 downto 0);
+		new_currency_interrupt    : in  std_logic;
 		return_currency_interrupt : out std_logic;
-		return_dollars            : inout unsigned(3 downto 0);
-		return_quarters           : inout unsigned(3 downto 0);
-		return_dimes              : inout unsigned(3 downto 0);
-		return_nickels            : inout unsigned(3 downto 0);
+		return_dollars            : out unsigned(3 downto 0);
+		return_quarters           : out unsigned(3 downto 0);
+		return_dimes              : out unsigned(3 downto 0);
+		return_nickels            : out unsigned(3 downto 0);
 		
 		-- motors/lightscreen
 		motors                    : out std_logic_vector(15 downto 0);
@@ -46,6 +46,11 @@ architecture components of vend_machine_controller is
 	signal reset_keypad, vend_request, enter_maintenance_mode, cancel_signal : std_logic;
 	signal not_insufficient_funds, not_lightscreen, dispensing_passed	 : std_logic;
 	signal item_price                                                        : ufixed(4 downto -5);
+--	signal return_dollars            :  unsigned(3 downto 0);
+--	signal return_quarters           :  unsigned(3 downto 0);
+--	signal return_dimes              :  unsigned(3 downto 0);
+--	signal return_nickels            :  unsigned(3 downto 0);
+	
 begin
 	clock_process: process is
 	begin

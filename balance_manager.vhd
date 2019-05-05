@@ -16,13 +16,14 @@ entity balance_manager is
 	      order_cost : in ufixed(4 downto -5); -- $32.00 with 0.03125 resolution, max order cost < $22.40
 	      dispensed, return_balance, reset, clk : in std_logic; -- vend and return balance commands from state machine, vend subtracts order cost from balance, and return_balance returns money to dollar/coin manager
 	      insufficient_funds, return_currency_interrupt : out std_logic; -- insufficient_funds signal to state machine, return_currency_interrupt to dollar/coin manager when return_balance outputs are ready
-	      return_dollars, return_quarters, return_dimes, return_nickles : inout unsigned(3 downto 0)); -- return balance quantity to dollar/coin manager
+	      return_dollars, return_quarters, return_dimes, return_nickles : out unsigned(3 downto 0)); -- return balance quantity to dollar/coin manager
 end entity balance_manager;
 
 architecture behavioral of balance_manager is
 
 signal previous_balance, loaded_balance, vended_balance, remaining_balance : ufixed(4 downto -5);
 signal temp_balance1, temp_balance2, temp_balance3, remainder1, remainder2, remainder3, dollars,quarters,dimes,nickles : ufixed(4 downto -5);
+signal rdollars,rquarters,rdimes,rnickles : unsigned(3 downto 0);
 
 begin
 
@@ -65,41 +66,52 @@ begin
 		-- calculate and set number of returned dollars, quarters, dimes, and nickles from remaining_balance
 		if (remaining_balance >= to_ufixed(1.00,remaining_balance)) then
 			return_dollars <= to_unsigned(remaining_balance, return_dollars'length);
+			rdollars <= to_unsigned(remaining_balance, return_dollars'length);
 		else
 			return_dollars <= to_unsigned(0, return_dollars'length);
+			rdollars <= to_unsigned(0, return_dollars'length);
 		end if;
 
-		temp_balance1 <= resize(remaining_balance - (to_ufixed(return_dollars,temp_balance1)*1.0), temp_balance1);
+		temp_balance1 <= resize(remaining_balance - (to_ufixed(rdollars,temp_balance1)*1.0), temp_balance1);
 		remainder1 <= resize(temp_balance1/to_ufixed(0.25,temp_balance1),remainder1);
 
 		if (remainder1 < to_ufixed(1,temp_balance1)) then	
 			return_quarters <= to_unsigned(0,return_quarters'length);
+		        rquarters <= to_unsigned(0,return_quarters'length);	
 		elsif (remainder1 < to_ufixed(2,temp_balance1)) then		
 			return_quarters <= to_unsigned(1,return_quarters'length);
+			rquarters <= to_unsigned(1,return_quarters'length);
 		elsif (remainder1 < to_ufixed(3,temp_balance1)) then
 			return_quarters <= to_unsigned(2,return_quarters'length);
+			rquarters <= to_unsigned(2,return_quarters'length);
 		elsif (remainder1 < to_ufixed(4,temp_balance1)) then
 			return_quarters <= to_unsigned(3,return_quarters'length);
+			rquarters <= to_unsigned(2,return_quarters'length);
 		end if;
 			
-		temp_balance2 <= resize(temp_balance1 - (to_ufixed(return_quarters, temp_balance2)*0.25), temp_balance2);
+		temp_balance2 <= resize(temp_balance1 - (to_ufixed(rquarters, temp_balance2)*0.25), temp_balance2);
 		remainder2 <= resize(temp_balance2/to_ufixed(0.10,temp_balance2),remainder2);
 
 		if (remainder2 < to_ufixed(1,temp_balance2)) then	
 			return_dimes <= to_unsigned(0,return_dimes'length);
+			rdimes <= to_unsigned(0,return_dimes'length);
 		elsif (remainder2 < to_ufixed(2,temp_balance2)) then		
 			return_dimes <= to_unsigned(1,return_dimes'length);
+			rdimes <= to_unsigned(1,return_dimes'length);
 		elsif (remainder2 < to_ufixed(3,temp_balance2)) then
 			return_dimes <= to_unsigned(2,return_dimes'length);
+			rdimes <= to_unsigned(2,return_dimes'length);
 		end if;
 
-		temp_balance3 <= resize(temp_balance2 - (to_ufixed(return_dimes, temp_balance3)*0.10), temp_balance3);
+		temp_balance3 <= resize(temp_balance2 - (to_ufixed(rdimes, temp_balance3)*0.10), temp_balance3);
 		remainder3 <= resize(temp_balance3/to_ufixed(0.05,temp_balance3),remainder3);
 
 		if (remainder3 < to_ufixed(1,temp_balance3)) then	
 			return_nickles <= to_unsigned(0,return_nickles'length);
+			rnickles <= to_unsigned(0,return_nickles'length);
 		elsif (remainder3 < to_ufixed(2,temp_balance3)) then		
 			return_nickles <= to_unsigned(1,return_nickles'length);
+			rnickles <= to_unsigned(1,return_nickles'length);
 		end if;
 
 		return_currency_interrupt <= '1';
