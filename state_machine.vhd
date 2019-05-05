@@ -28,7 +28,8 @@ architecture behavioral of state_machine is
 	type state_type is (idle, payment, inventory, vend, maintenance);
 	signal message : string;            -- todo route out to display
 begin
-	process(clock, state) is
+	process(clock) is
+		variable state : state_type := idle;
 	begin
 		if rising_edge(clock) then
 			-- default control signal states
