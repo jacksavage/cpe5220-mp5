@@ -18,6 +18,7 @@ architecture test of tb_vend_machine_controller is
 	signal sel_button                : std_logic_vector(7 downto 0);
 	signal vend_btn                  : std_logic;
 	signal cancel_btn                : std_logic;
+	signal input_ready		 : std_logic;
 		
 	-- coin & bill manager
 	signal num_dollars               : unsigned(3 downto 0);
@@ -52,12 +53,12 @@ begin
 			  --display
 			  item_display=>item_display, 
 			  -- keypad
-			  sel_button=>sel_button, vend_btn=>vend_btn, cancel_btn=>cancel_btn, 
+			  sel_button=>sel_button, vend_btn=>vend_btn, cancel_btn=>cancel_btn, input_ready=>input_ready, 
 			  -- coin & bill manager
 			  num_dollars=>num_dollars, num_quarters=>num_quarters, num_dimes=>num_dimes, 
 		          num_nickels=>num_nickels, new_currency_interrupt=>new_currency_interrupt,
 			  return_dollars=>return_dollars, return_quarters=>return_quarters, return_dimes=>return_dimes, 
-			  return_nickels=>return_nickels, return_currency_interrupt=>return_currency_interrupt,
+			  return_nickels=>return_nickels,
 			  -- motors/lightscreen
 			  motors=>motors, lightscreen=>lightscreen,
 			  -- reset
@@ -111,16 +112,41 @@ begin
 	procedure vend(vend_btn_test, cancel_btn_test : std_logic) is
 	begin
 		vend_btn   <= vend_btn_test;
+		if (vend_btn_test = '1') then
+		        wait for 2*t_c;
+			lightscreen <= '0';
+			wait for 2*t_c;
+			lightscreen <= '1';
+		end if;
 		cancel_btn <= cancel_btn_test;
 	end procedure vend;
 
 	begin
 		wait until reset = '0';
-		load_currency(2,0,0,0); -- $2.00
 		select_item('A','1'); -- $1.75
 		load_currency(2,0,0,0); -- $2.00
 		vend('1','0');
 
+		wait until input_ready = '1';
+		select_item('A','2'); -- $1.00
+		load_currency(1,2,1,1); -- $1.65
+		vend('1','0');
+
+		wait until input_ready = '1';
+		select_item('B','1'); -- $0.75
+		load_currency(0,3,0,0); -- $0.75
+		vend('1','0');
+
+		wait until input_ready = '1';
+		select_item('C','3'); -- $1.90
+		load_currency(0,7,0,1); -- $1.80, insufficient_funds
+		vend('1','0');
+
+		wait until input_ready = '1';
+		select_item('D','4'); -- $1.20
+		load_currency(2,0,0,0); -- $2.00
+		vend('0','1'); -- cancel
+		
 	end process run_tests;
 
 

@@ -12,6 +12,7 @@ entity vend_machine_controller is
 		sel_button                : in  std_logic_vector(7 downto 0);
 		vend_btn                  : in  std_logic;
 		cancel_btn                : in  std_logic;
+		input_ready		  : out std_logic;
 		
 		-- coin & bill manager
 		num_dollars               : in unsigned(3 downto 0);
@@ -19,7 +20,6 @@ entity vend_machine_controller is
 		num_dimes                 : in unsigned(3 downto 0);
 		num_nickels               : in  unsigned(3 downto 0);
 		new_currency_interrupt    : in  std_logic;
-		return_currency_interrupt : out std_logic;
 		return_dollars            : out unsigned(3 downto 0);
 		return_quarters           : out unsigned(3 downto 0);
 		return_dimes              : out unsigned(3 downto 0);
@@ -38,7 +38,7 @@ architecture components of vend_machine_controller is
 	signal t_c    : time      := 1 ns;
 	signal clock :  std_logic;
 
-	signal valid_item_requested                                              : std_logic;
+	signal valid_item_requested, return_money_complete                       : std_logic;
 	signal item_num, inventory_quantity                                      : unsigned(3 downto 0);
 	signal item_sold_out, remove_inventory, add_inventory, price_ready       : std_logic;
 	signal dispense, done_dispensing, dispensing_failed                      : std_logic;
@@ -46,10 +46,6 @@ architecture components of vend_machine_controller is
 	signal reset_keypad, vend_request, enter_maintenance_mode, cancel_signal : std_logic;
 	signal not_insufficient_funds, not_lightscreen, dispensing_passed	 : std_logic;
 	signal item_price                                                        : ufixed(4 downto -5);
---	signal return_dollars            :  unsigned(3 downto 0);
---	signal return_quarters           :  unsigned(3 downto 0);
---	signal return_dimes              :  unsigned(3 downto 0);
---	signal return_nickels            :  unsigned(3 downto 0);
 	
 begin
 	clock_process: process is
@@ -62,7 +58,7 @@ begin
 
 	not_insufficient_funds <= not insufficient_funds;
 	not_lightscreen <= not lightscreen;
-	dispensing_passed <= done_dispensing and dispensing_failed;
+	dispensing_passed <= done_dispensing and not(dispensing_failed);
 
 	display1 : entity work.display
 		port map(
@@ -98,7 +94,7 @@ begin
 			reset                     => '0',
 			clk                       => clock,
 			insufficient_funds        => insufficient_funds,
-			return_currency_interrupt => return_currency_interrupt,
+			return_currency_interrupt => return_money_complete,
 			return_dollars            => return_dollars,
 			return_quarters           => return_quarters,
 			return_dimes              => return_dimes,
@@ -107,7 +103,7 @@ begin
 
 	state_machine1 : entity work.state_machine
 		port map(
-			reset_keypad           => reset_keypad,
+			reset_keypad           => input_ready,
 			clock                  => clock,
 			vend_request           => vend_request,
 			enter_maintenance_mode => enter_maintenance_mode,
@@ -123,7 +119,8 @@ begin
 			remove_inventory       => remove_inventory,
 			add_inventory          => add_inventory,
 			inventory_quantity     => inventory_quantity,
-			price_ready            => price_ready
+			price_ready            => price_ready,
+			return_money_complete  => return_money_complete
 		);
 
 	dispenser1 : entity work.dispenser

@@ -34,14 +34,14 @@ begin
 			case state is
 				when idle =>
 					motors     <= (others => '0'); 	-- motors should not be driven in idle state
-					ls_mon_rst <= '1'; 				-- hold the lightscreen monitor in reset
-				
+					ls_mon_rst <= '1'; 		-- hold the lightscreen monitor in reset
+				        done       <= '0';		-- reset done signal
+					failed	   <= '0';		-- reset failed flag
 					-- should an item be dispensed?
 					if dispense = '1' then 										-- yes
 						state       					<= vending; 			-- set next state 
 						drive_count 					<= init_drive_count; 	-- load the drive counter
 						motors(to_integer(item_num)) 	<= '1'; 				-- start driving the selected motor
-						done        					<= '0';					-- reset done signal
 						ls_mon_rst 						<= '0';					-- release ls_mon latch reset
 						failed							<= '0';					-- reset failed flag
 					end if;

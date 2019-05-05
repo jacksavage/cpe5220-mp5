@@ -20,7 +20,8 @@ entity state_machine is
 		remove_inventory       : out std_logic;
 		add_inventory          : out std_logic;
 		inventory_quantity     : out unsigned(3 downto 0);
-		price_ready            : in  std_logic
+		price_ready            : in  std_logic;
+		return_money_complete  : in  std_logic
 	);
 end entity state_machine;
 
@@ -30,23 +31,25 @@ architecture behavioral of state_machine is
 	signal state : state_type;
 begin
 	process(clock) is
+	variable cnt : integer := 0;
 	begin
 		if rising_edge(clock) then
-
+			dispense           <= '0';
+			remove_inventory   <= '0';
+			reset_keypad       <= '0';
 			-- handle current state
 			case state is
 				when idle =>
 					-- default control signal states
-					reset_keypad       <= '0';
+					reset_keypad       <= '1';
 					refund_all_money   <= '0';
 					refund_change      <= '0';
-					dispense           <= '0';
-					remove_inventory   <= '0';
 					add_inventory      <= '0';
 					inventory_quantity <= to_unsigned(0, inventory_quantity'length);
 					state <= input;
 
 				when input =>
+					message <= "Input selection   ";
 					if cancel_signal = '1' then
 						refund_all_money <= '1';
 						state <= idle;
@@ -64,6 +67,7 @@ begin
 						state            <= idle;
 					elsif price_ready = '1' and funds_available = '1' then
 						message <= "                  ";
+						remove_inventory <= '1';
 						state   <= inventory;
 					else
 						message <= "Insufficient funds";
@@ -85,10 +89,16 @@ begin
 							message <= "  Please try again";
 						else
 							message       <= "    Item dispensed";
-							refund_change <= '1';
+							refund_all_money <= '1';
 						end if;
-
-						state <= idle;
+						
+						if (return_money_complete = '1') then
+							cnt := cnt+1;
+							if(cnt=5) then
+								state <= idle;
+								cnt := 0;
+							end if;
+						end if;
 					else
 						message <= "           Vending";
 					end if;

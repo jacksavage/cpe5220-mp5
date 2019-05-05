@@ -53,9 +53,9 @@ begin
 	end if;
 	end process;
 	
-	return_currency: process(clk) is -- return remaining_balance if vend action occurs or loaded_balance if order is canceled
+	return_currency: process(clk, dispensed, return_balance) is -- return remaining_balance if vend action occurs or loaded_balance if order is canceled
 	begin
-	
+
 	if (dispensed='1') then
 		remaining_balance <= vended_balance;
 	else
@@ -115,6 +115,8 @@ begin
 		end if;
 
 		return_currency_interrupt <= '1';
+	else
+		return_currency_interrupt <= '0';
 	end if;
 	end process;
 	
