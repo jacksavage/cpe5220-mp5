@@ -44,7 +44,7 @@ architecture components of vend_machine_controller is
 	signal dispense, done_dispensing, dispensing_failed                      : std_logic;
 	signal refund_all_money, refund_change, insufficient_funds               : std_logic;
 	signal reset_keypad, vend_request, enter_maintenance_mode, cancel_signal : std_logic;
-	signal not_insufficient_funds, not_lightscreen				 : std_logic;
+	signal not_insufficient_funds, not_lightscreen, dispensing_passed	 : std_logic;
 	signal item_price                                                        : ufixed(4 downto -5);
 begin
 	clock_process: process is
@@ -57,6 +57,7 @@ begin
 
 	not_insufficient_funds <= not insufficient_funds;
 	not_lightscreen <= not lightscreen;
+	dispensing_passed <= done_dispensing and dispensing_failed;
 
 	display1 : entity work.display
 		port map(
@@ -87,7 +88,7 @@ begin
 			num_nickles               => num_nickels,
 			new_currency_interrupt    => new_currency_interrupt,
 			order_cost                => item_price,
-			vend                      => refund_change,
+			dispensed                 => dispensing_passed,
 			return_balance            => refund_all_money,
 			reset                     => '0',
 			clk                       => clock,
