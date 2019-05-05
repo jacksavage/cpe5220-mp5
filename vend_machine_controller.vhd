@@ -27,7 +27,10 @@ entity vend_machine_controller is
 		
 		-- motors/lightscreen
 		motors                    : out std_logic_vector(15 downto 0);
-		lightscreen               : in  std_logic
+		lightscreen               : in  std_logic;
+
+		-- reset
+		reset			  : in std_logic
 	);
 end entity vend_machine_controller;
 
@@ -37,7 +40,7 @@ architecture components of vend_machine_controller is
 
 	signal valid_item_requested                                              : std_logic;
 	signal item_num, inventory_quantity                                      : unsigned(3 downto 0);
-	signal item_sold_out, remove_inventory, add_inventory                    : std_logic;
+	signal item_sold_out, remove_inventory, add_inventory, price_ready       : std_logic;
 	signal dispense, done_dispensing, dispensing_failed                      : std_logic;
 	signal refund_all_money, refund_change, insufficient_funds               : std_logic;
 	signal reset_keypad, vend_request, enter_maintenance_mode, cancel_signal : std_logic;
@@ -113,7 +116,8 @@ begin
 			item_sold_out          => item_sold_out,
 			remove_inventory       => remove_inventory,
 			add_inventory          => add_inventory,
-			inventory_quantity     => inventory_quantity
+			inventory_quantity     => inventory_quantity,
+			price_ready            => price_ready
 		);
 
 	dispenser1 : entity work.dispenser
@@ -133,9 +137,10 @@ begin
 			add        => add_inventory,
 			remove     => remove_inventory,
 			clk        => clock,
-			reset      => '0',
+			reset      => reset,
 			quantity   => inventory_quantity,
 			sold_out   => item_sold_out,
-			item_price => item_price
+			item_price => item_price,
+			ready 	   => price_ready
 		);
 end architecture components;

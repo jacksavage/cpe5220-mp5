@@ -19,7 +19,8 @@ entity state_machine is
 		item_sold_out          : in  std_logic;
 		remove_inventory       : out std_logic;
 		add_inventory          : out std_logic;
-		inventory_quantity     : out unsigned(3 downto 0)
+		inventory_quantity     : out unsigned(3 downto 0);
+		price_ready	       : in  std_logic
 	);
 end entity state_machine;
 
@@ -27,8 +28,7 @@ architecture behavioral of state_machine is
 	type state_type is (idle, payment, inventory, vend, maintenance);
 	signal message : string;            -- todo route out to display
 begin
-	process(clock) is
-		variable state : state_type := idle;
+	process(clock, state) is
 	begin
 		if rising_edge(clock) then
 			-- default control signal states
