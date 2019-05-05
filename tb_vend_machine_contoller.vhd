@@ -119,6 +119,9 @@ begin
 			lightscreen <= '1';
 		end if;
 		cancel_btn <= cancel_btn_test;
+		wait for 2*t_c;
+		vend_btn <= '0';
+		cancel_btn <='0';
 	end procedure vend;
 
 	begin
@@ -141,6 +144,7 @@ begin
 		select_item('C','3'); -- $1.90
 		load_currency(0,7,0,1); -- $1.80, insufficient_funds
 		vend('1','0');
+		vend('0','1');
 
 		wait until input_ready = '1';
 		select_item('D','4'); -- $1.20

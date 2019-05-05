@@ -43,7 +43,7 @@ begin
 	calculate_balance: process(order_cost) is -- when state machine sends vend command, calculate remaining_balance or insufficient_funds
 	begin
 	if (reset = '0') then
-		if (loaded_balance > order_cost) then
+		if (loaded_balance >= order_cost) then
 			vended_balance <= resize(loaded_balance-order_cost, remaining_balance);
 			previous_balance <= vended_balance; -- in case user loads more money
 			insufficient_funds <= '0';

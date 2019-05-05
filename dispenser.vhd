@@ -56,7 +56,7 @@ begin
 						state 							<= idle;		-- set next state
 						motors(to_integer(item_num)) 	<= '0';   		-- stop driving the motor
 						done 							<= '1';			-- indicate that the vend is complete
-						failed 							<= not ls_mon;	-- set the failed flag if no lightscreen interrupt observed
+						--failed 							<= not ls_mon;	-- set the failed flag if no lightscreen interrupt observed
 					end if;
 			end case;
 		end if;

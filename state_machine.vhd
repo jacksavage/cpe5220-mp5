@@ -65,14 +65,23 @@ begin
 				when payment =>
 					if cancel_signal = '1' then
 						refund_all_money <= '1';
-						state            <= idle;
 					elsif price_ready = '1' and funds_available = '1' then
 						message <= "                  ";
 						remove_inventory <= '1';
 						state   <= inventory;
 					else
 						message <= "Insufficient funds";
-						state   <= payment;
+						if (return_money_complete = '1') then
+							if(rising_edge(clock)) then
+								cnt := cnt+1;
+							end if;
+							if(cnt=5) then
+								state <= idle;
+								cnt := 0;
+								dispensed := 0;
+							end if;
+							message <= "   Returning money";
+						end if;
 					end if;
 
 				when inventory =>
