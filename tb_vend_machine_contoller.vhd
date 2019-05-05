@@ -43,6 +43,7 @@ architecture test of tb_vend_machine_controller is
 	signal clk : std_logic;
 
 	-- test bench variables
+	signal select_test, load_test, vend_test : integer;
 
 begin
 	-- instantiate DUV
@@ -73,9 +74,37 @@ begin
 	end process clk_gen;
 
 	reset <= '1', '0' after 2*t_c;
+	
+	run_tests : process is
+	
+	procedure test_case (test_num : integer) is
+	begin
+		select_test <= test_num;
+		for i in 0 to 5 loop
+			wait for rising_edge(clk);
+		end loop;
+		
+		load_test <= test_num;
+		for i in 0 to 5 loop
+			wait for rising_edge(clk);
+		end loop;	
 
-	apply_test_cases : process is
+		vend_test <= test_num;
+		for i in 0 to 5 loop
+			wait for rising_edge(clk);
+		end loop;		
+	end process run_tests;
 
+	begin
+		test_case(1);
+		test_case(2);
+		test_case(3);
+		test_case(4);
+		test_case(5);
+	end process run_tests;
+
+
+	select_item_process : process(select_test) is
 	-- select item
 	procedure select_item (letter_test, number_test : character) is
 	begin
@@ -101,20 +130,25 @@ begin
 				sel_button(3 downto 0) <= "0001"; 
 			when others =>
 		end case;
-		for i in 0 to 3 loop
-			wait until rising_edge(clk);
-		end loop;
 	end procedure select_item;
 
 	begin
-		wait until reset = '0';
-		select_item('A','1');
-		select_item('A','2');
-		select_item('B','1');
-		select_item('C','3');
-		select_item('D','4');
-
-	end process apply_test_cases;
+		case(test) is
+		when 1 =>
+			select_item('A','1'); -- $1.75
+			num_dollars <= to_unsigned(2, num_dollars'length);
+			vend_btn <= '1'; 
+		when 2 =>
+			select_item('A','2'); -- $1.00
+		when 3 =>	
+			select_item('B','1'); -- $0.75
+		when 4 =>
+			select_item('C','3'); -- $1.90
+		when 5 =>	
+			select_item('D','4'); -- $1.20
+		when others =>
+		end case;
+	end process select_item_process;
 	
 end architecture test;
 
