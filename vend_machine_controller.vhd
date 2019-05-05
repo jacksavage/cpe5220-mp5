@@ -14,16 +14,16 @@ entity vend_machine_controller is
 		cancel_btn                : in  std_logic;
 		
 		-- coin & bill manager
-		num_dollars               : out unsigned(3 downto 0);
-		num_quarters              : out unsigned(3 downto 0);
-		num_dimes                 : out unsigned(3 downto 0);
-		num_nickels               : in  unsigned(3 downto 0);
-		new_currency_interrupt    : in  std_logic;
+		num_dollars               : inout unsigned(3 downto 0);
+		num_quarters              : inout unsigned(3 downto 0);
+		num_dimes                 : inout unsigned(3 downto 0);
+		num_nickels               : inout  unsigned(3 downto 0);
+		new_currency_interrupt    : inout  std_logic;
 		return_currency_interrupt : out std_logic;
-		return_dollars            : out unsigned(3 downto 0);
-		return_quarters           : out unsigned(3 downto 0);
-		return_dimes              : out unsigned(3 downto 0);
-		return_nickels            : out unsigned(3 downto 0);
+		return_dollars            : inout unsigned(3 downto 0);
+		return_quarters           : inout unsigned(3 downto 0);
+		return_dimes              : inout unsigned(3 downto 0);
+		return_nickels            : inout unsigned(3 downto 0);
 		
 		-- motors/lightscreen
 		motors                    : out std_logic_vector(15 downto 0);
@@ -41,9 +41,16 @@ architecture components of vend_machine_controller is
 	signal dispense, done_dispensing, dispensing_failed                      : std_logic;
 	signal refund_all_money, refund_change, insufficient_funds               : std_logic;
 	signal reset_keypad, vend_request, enter_maintenance_mode, cancel_signal : std_logic;
+	signal not_insufficient_funds, not_lightscreen				 : std_logic;
 	signal item_price                                                        : ufixed(4 downto -5);
 begin
-	clock <= not clock after T / 2;
+	clock_process: process is
+	begin
+		clock <= not clock after T / 2;
+	end process;
+
+	not_insufficient_funds <= not insufficient_funds;
+	not_lightscreen <= not lightscreen;
 
 	display1 : entity work.display
 		port map(
@@ -96,7 +103,7 @@ begin
 			cancel_signal          => cancel_signal,
 			refund_all_money       => refund_all_money,
 			refund_change          => refund_change,
-			funds_available        => not insufficient_funds,
+			funds_available        => not_insufficient_funds,
 			dispense               => dispense,
 			done_dispensing        => done_dispensing,
 			dispensing_failed      => dispensing_failed,
@@ -110,7 +117,7 @@ begin
 		port map(
 			clk           => clock,
 			dispense      => dispense,
-			lightscreen_n => not lightscreen,
+			lightscreen_n => not_lightscreen,
 			item_num      => item_num,
 			motors        => motors,
 			done          => done_dispensing,
