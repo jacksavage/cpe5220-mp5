@@ -149,6 +149,7 @@ begin
 		wait until input_ready = '1';
 		select_item('D','4'); -- $1.20
 		load_currency(2,0,0,0); -- $2.00
+		wait for 2*t_c;
 		vend('0','1'); -- cancel
 		
 	end process run_tests;

@@ -53,13 +53,24 @@ begin
 					message <= "Input selection   ";
 					if cancel_signal = '1' then
 						refund_all_money <= '1';
-						state <= idle;
 					elsif enter_maintenance_mode = '1' then
 						state <= maintenance;
 					elsif vend_request = '1' and valid_item_requested = '1' then
 						-- todo latch the item number?
 						inventory_quantity <= to_unsigned(1, inventory_quantity'length);
 						state <= payment;
+					end if;
+
+					if (return_money_complete = '1') then
+						if(rising_edge(clock)) then
+							cnt := cnt+1;
+						end if;
+						if(cnt=5) then
+							state <= idle;
+							cnt := 0;
+							dispensed := 0;
+						end if;
+						message <= "   Returning money";
 					end if;
 
 				when payment =>

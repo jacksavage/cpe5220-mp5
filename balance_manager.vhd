@@ -64,12 +64,38 @@ begin
 
 	if (return_balance = '1' and reset = '0') then
 		-- calculate and set number of returned dollars, quarters, dimes, and nickles from remaining_balance
-		if (remaining_balance >= to_ufixed(1.00,remaining_balance)) then
-			return_dollars <= to_unsigned(remaining_balance, return_dollars'length);
-			rdollars <= to_unsigned(remaining_balance, return_dollars'length);
-		else
+		
+                
+		if (remaining_balance < to_ufixed(1,remaining_balance)) then
 			return_dollars <= to_unsigned(0, return_dollars'length);
 			rdollars <= to_unsigned(0, return_dollars'length);
+                elsif (remaining_balance < to_ufixed(2,remaining_balance)) then
+			return_dollars <= to_unsigned(1, return_dollars'length);
+			rdollars <= to_unsigned(1, return_dollars'length);
+		elsif (remaining_balance < to_ufixed(3,remaining_balance)) then
+			return_dollars <= to_unsigned(2, return_dollars'length);
+			rdollars <= to_unsigned(2, return_dollars'length);
+		elsif (remaining_balance < to_ufixed(4,remaining_balance)) then
+			return_dollars <= to_unsigned(3, return_dollars'length);
+			rdollars <= to_unsigned(3, return_dollars'length);
+		elsif (remaining_balance < to_ufixed(5,remaining_balance)) then
+			return_dollars <= to_unsigned(4, return_dollars'length);
+			rdollars <= to_unsigned(4, return_dollars'length);
+		elsif (remaining_balance < to_ufixed(6,remaining_balance)) then
+			return_dollars <= to_unsigned(5, return_dollars'length);
+			rdollars <= to_unsigned(5, return_dollars'length);
+		elsif (remaining_balance < to_ufixed(7,remaining_balance)) then
+			return_dollars <= to_unsigned(6, return_dollars'length);
+			rdollars <= to_unsigned(6, return_dollars'length);
+		elsif (remaining_balance < to_ufixed(8,remaining_balance)) then
+			return_dollars <= to_unsigned(7, return_dollars'length);
+			rdollars <= to_unsigned(7, return_dollars'length);
+		elsif (remaining_balance < to_ufixed(9,remaining_balance)) then
+			return_dollars <= to_unsigned(8, return_dollars'length);
+			rdollars <= to_unsigned(8, return_dollars'length);
+		elsif (remaining_balance >= to_ufixed(9,remaining_balance)) then
+			return_dollars <= to_unsigned(remaining_balance, return_dollars'length);
+			rdollars <= to_unsigned(remaining_balance, return_dollars'length);
 		end if;
 
 		temp_balance1 <= resize(remaining_balance - (to_ufixed(rdollars,temp_balance1)*1.0), temp_balance1);
@@ -86,7 +112,7 @@ begin
 			rquarters <= to_unsigned(2,return_quarters'length);
 		elsif (remainder1 < to_ufixed(4,temp_balance1)) then
 			return_quarters <= to_unsigned(3,return_quarters'length);
-			rquarters <= to_unsigned(2,return_quarters'length);
+			rquarters <= to_unsigned(3,return_quarters'length);
 		end if;
 			
 		temp_balance2 <= resize(temp_balance1 - (to_ufixed(rquarters, temp_balance2)*0.25), temp_balance2);
