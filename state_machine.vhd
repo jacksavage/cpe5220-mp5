@@ -19,24 +19,39 @@ entity state_machine is
 		item_sold_out          : in  std_logic;
 		remove_inventory       : out std_logic;
 		add_inventory          : out std_logic;
-		inventory_quantity     : out unsigned(3 downto 0)
+		inventory_quantity     : out unsigned(3 downto 0);
+		price_ready	       : in  std_logic
 	);
 end entity state_machine;
 
 architecture behavioral of state_machine is
-	type state_type is (idle, payment, dispursement);
+	type state_type is (idle, input, payment, dispursement, maintenance);
+	signal state : state_type := idle;
 begin
-	process(clock) is
-		variable state : state_type := idle;
+	process(clock, state) is
 	begin
 		if rising_edge(clock) then
 			case state is
 				when idle =>
-					state := payment;
+					reset_keypad <= '0';
+					inventory_quantity <= to_unsigned(0, inventory_quantity'length);
+					state <= input;
+				when input =>
+					if (enter_maintenance_mode = '1') then
+						state <= maintenance;
+					elsif( valid_item_requested = '1' ) then
+						state <= payment;
+						inventory_quantity <= to_unsigned(1, inventory_quantity'length);
+					end if;
 				when payment =>
-					state := dispursement;
+					if (price_ready = '1') then
+						state <= dispursement;
+					end if;
 				when dispursement =>
-					state := idle;
+					reset_keypad <= '1';
+					state <= idle;
+				when maintenance =>
+					state <= idle;
 			end case;
 		end if;
 	end process;
