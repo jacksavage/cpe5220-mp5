@@ -17,6 +17,7 @@ end entity input_selection;
 architecture behavioral of input_selection is
 signal button_letter : integer;
 signal button_number : integer;
+signal item_num_valid : integer;
 
 begin
 -- convert sel_button input to item_num
@@ -32,10 +33,19 @@ button_number <= 0 when sel_button(3) = '1' else
 		 3 when sel_button(0) = '1';
 
 item_num <= resize(to_unsigned(button_letter, item_num'length) + to_unsigned(button_number, item_num'length), item_num'length);
+item_num_valid <= button_letter+button_number;
 
 process_buttons : process(clk)
 begin
 if reset = '0' then
+	
+	-- check if input is valid
+	if ((item_num_valid>0) and (item_num_valid<16)) then
+		valid <= '1';
+	else
+		valid <= '0';
+	end if;
+
 	-- detect button combo for maintenance mode and set signal
 	if sel_button = "11111111" then -- Hold down all buttons
 		maintenance_signal <= '1';
@@ -45,10 +55,10 @@ if reset = '0' then
 
 	-- process return_btn
 	if vend_btn = '1' then
-		valid <= '1';
+		--valid <= '1';
 		vend_signal <= '1';
 	else
-		valid <= '0';
+		--valid <= '0';
 		vend_signal <= '0';
 	end if;
 	
