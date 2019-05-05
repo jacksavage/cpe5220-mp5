@@ -79,14 +79,14 @@ begin
 	procedure test_case (test_num : integer) is
 	begin
 		select_test <= test_num;
-		for i in 0 to 5 loop
-			wait until rising_edge(clk);
-		end loop;
+		--for i in 0 to 5 loop
+			--wait until rising_edge(clk);
+		--end loop;
 		
 		load_test <= test_num;
-		for i in 0 to 5 loop
-			wait until rising_edge(clk);
-		end loop;	
+		--for i in 0 to 5 loop
+			--wait until rising_edge(clk);
+		--end loop;	
 
 		vend_test <= test_num;
 		for i in 0 to 5 loop
