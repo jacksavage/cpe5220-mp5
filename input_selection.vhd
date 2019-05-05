@@ -21,7 +21,6 @@ signal item_num_valid : integer;
 
 begin
 -- convert sel_button input to item_num
-
 button_letter <= 0  when sel_button(7) = '1' else
 		 4  when sel_button(6) = '1' else
 		 8  when sel_button(5) = '1' else
@@ -40,7 +39,7 @@ begin
 if reset = '0' then
 	
 	-- check if input is valid
-	if ((item_num_valid>0) and (item_num_valid<16)) then
+	if ((item_num_valid>=0) and (item_num_valid<16)) then
 		valid <= '1';
 	else
 		valid <= '0';
