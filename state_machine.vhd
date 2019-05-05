@@ -19,7 +19,7 @@ entity state_machine is
 		item_sold_out          : in  std_logic;
 		remove_inventory       : out std_logic;
 		add_inventory          : out std_logic;
-		inventory_quantity     : out unsigned(3 downto 0);
+		inventory_quantity     : inout unsigned(3 downto 0);
 		price_ready            : in  std_logic
 	);
 end entity state_machine;
@@ -39,7 +39,7 @@ begin
 			dispense           <= '0';
 			remove_inventory   <= '0';
 			add_inventory      <= '0';
-			inventory_quantity <= to_unsigned(0, inventory_quantity);
+			inventory_quantity <= to_unsigned(0, inventory_quantity'length);
 
 			-- handle current state
 			case state is
