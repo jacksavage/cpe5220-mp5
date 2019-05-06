@@ -7,3 +7,5 @@
 
 transcript
 *.old
+
+*.opt
