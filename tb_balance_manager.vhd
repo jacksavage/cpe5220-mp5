@@ -72,14 +72,15 @@ begin
         return_balance <= '0';
         dispensed      <= '0';
         wait until rising_edge(clk) and reset = '0';
-        order_cost     <= to_ufixed(1.00, order_cost); -- Order $1.00
         apply_test(1, 2, 1, 1);         -- Load $1.65
+        order_cost     <= to_ufixed(1.00, order_cost); -- Order $1.00
 
+        apply_test(5, 3, 2, 1);         -- Load $6.00
         order_cost <= to_ufixed(1.75, order_cost); -- Order $1.75
-        apply_test(5, 3, 2, 1);         -- Load $6.00
 
-        order_cost <= to_ufixed(6.50, order_cost); -- Order $6.50
         apply_test(5, 3, 2, 1);         -- Load $6.00
+        order_cost <= to_ufixed(6.50, order_cost); -- Order $6.50
+
     end process apply_test_cases;
 end architecture test;
 
